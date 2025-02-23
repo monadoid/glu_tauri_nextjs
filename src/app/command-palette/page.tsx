@@ -105,13 +105,17 @@ export default function CommandDemo() {
 
   // Merge transcribed text into our commandValue
   const handleTranscription = (transcribedText: string) => {
-    // Optionally, just replace the input or append
-    setCommandValue((prev) => (prev ? `${prev} ${transcribedText}` : transcribedText));
+    // Combine existing input with the new transcribed text (or replace if empty)
+    const finalText = commandValue ? `${commandValue} ${transcribedText}` : transcribedText;
+    setCommandValue(finalText);
+
+    // Automatically submit to backend without waiting for user to press Enter
+    void handleCommand(finalText);
   };
 
   return (
     <div className="bg-transparent w-full">
-      {/* Render the invisible AudioRecorder, controlled by isRecording */}
+      {/* Pass our new handleTranscription as the callback */}
       <AudioRecorder
         isRecording={isRecording}
         onTranscription={handleTranscription}
@@ -122,8 +126,8 @@ export default function CommandDemo() {
           <CommandInput
             placeholder=""
             value={commandValue}
-            onChange={(e) => setCommandValue(e.target.value)}
-            onKeyDown={(e) => {
+            onValueChange={setCommandValue}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
               if (e.key === "Enter") {
                 void handleCommand(commandValue);
               }
