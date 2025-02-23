@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
-function AudioRecorder() {
-    const [isRecording, setIsRecording] = useState(false);
-    const [mediaRecorder, setMediaRecorder] = useState(null);
-    const [audioBlob, setAudioBlob] = useState(null);
+// Add a new prop type for AudioRecorder
+interface AudioRecorderProps {
+    isRecording: boolean; // Parent will toggle this
+    onTranscription?: (text: string) => void; // Fire once transcription is done
+}
+
+function AudioRecorder({ isRecording, onTranscription }: AudioRecorderProps) {
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [transcription, setTranscription] = useState("");
-    const chunksRef = useRef([]); // Holds recorded audio chunks
+    const chunksRef = useRef<Blob[]>([]); // Holds recorded audio chunks
 
     const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROK_API_KEY;
 
@@ -37,8 +42,6 @@ function AudioRecorder() {
             // Start recording
             recorder.start();
             setMediaRecorder(recorder);
-            setIsRecording(true);
-            setTranscription(""); // Reset any old transcription
         } catch (error) {
             console.error("Error starting recording:", error);
         }
@@ -48,10 +51,27 @@ function AudioRecorder() {
     const stopRecording = () => {
         if (mediaRecorder) {
             mediaRecorder.stop();
-            setIsRecording(false);
             setMediaRecorder(null);
         }
     };
+
+    // Handle isRecording changes
+    useEffect(() => {
+        // Recording just started
+        if (isRecording) {
+            void startRecording();
+        } else {
+            // Recording just ended
+            stopRecording();
+        }
+    }, [isRecording]);
+
+    // Whenever audioBlob changes (i.e. after stopping), auto-transcribe
+    useEffect(() => {
+        if (audioBlob) {
+            void sendRecordingForTranscription();
+        }
+    }, [audioBlob]);
 
     // Send the recorded blob to Groq for transcription
     const sendRecordingForTranscription = async () => {
@@ -93,37 +113,19 @@ function AudioRecorder() {
             // Groq returns JSON with { text: "Transcribed text here" } by default
             const data = await response.json();
             setTranscription(data.text);
+
+            // <-- Call the parent's callback if provided
+            if (onTranscription) {
+                onTranscription(data.text);
+            }
         } catch (error) {
             console.error("Error sending transcription request:", error);
             alert("There was an error transcribing your audio. Check console.");
         }
     };
 
-    return (
-        <div className="w-full bg-white">
-            <h1>Audio Recorder</h1>
-
-            <div style={{ marginBottom: "1rem" }}>
-                {!isRecording && (
-                    <button onClick={startRecording}>Start Recording</button>
-                )}
-                {isRecording && <button onClick={stopRecording}>Stop Recording</button>}
-            </div>
-
-            <div style={{ marginBottom: "1rem" }}>
-                <button onClick={sendRecordingForTranscription} disabled={!audioBlob}>
-                    Send to Groq
-                </button>
-            </div>
-
-            {transcription && (
-                <div>
-                    <h3>Transcription:</h3>
-                    <p>{transcription}</p>
-                </div>
-            )}
-        </div>
-    );
+    return null; 
+    // We no longer render UI here; the parent handles all UI (the single record button).
 }
 
 export default AudioRecorder;

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/command"
 import { fetch } from '@tauri-apps/plugin-http'
 import { Button } from "@/components/ui/button"
+import AudioRecorder from "./components/speech-to-text"
 
 import { isLLMToolCallResponse, LLMToolCallResponse } from "../../lib/helpers"
 
@@ -20,6 +21,12 @@ export default function CommandDemo() {
   // Store toolCall data if we detect one in the server response
   const [toolCallData, setToolCallData] = useState<LLMToolCallResponse | null>(null);
   const [confirmingToolCall, setConfirmingToolCall] = useState<boolean>(false);
+
+  // Track command input
+  const [commandValue, setCommandValue] = useState("");
+
+  // A local boolean to track if we are currently recording or not
+  const [isRecording, setIsRecording] = useState(false);
 
   const handleCommand = async (value: string) => {
     if (!value.trim()) return;
@@ -96,30 +103,50 @@ export default function CommandDemo() {
     }
   };
 
+  // Merge transcribed text into our commandValue
+  const handleTranscription = (transcribedText: string) => {
+    // Optionally, just replace the input or append
+    setCommandValue((prev) => (prev ? `${prev} ${transcribedText}` : transcribedText));
+  };
+
   return (
     <div className="bg-transparent w-full">
+      {/* Render the invisible AudioRecorder, controlled by isRecording */}
+      <AudioRecorder
+        isRecording={isRecording}
+        onTranscription={handleTranscription}
+      />
+
       <Command shouldFilter={false} className="p-4 py-8 rounded-lg bg-[#151415]">
-        <CommandInput
-          placeholder=""
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              void handleCommand((e.target as HTMLInputElement).value);
-            }
-          }}
-          className="autofocus text-white"
-        />
+        <div className="flex items-center gap-2">
+          <CommandInput
+            placeholder=""
+            value={commandValue}
+            onChange={(e) => setCommandValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                void handleCommand(commandValue);
+              }
+            }}
+            className="autofocus text-white flex-1"
+          />
+
+          {/* Single Record button to the right of our input */}
+          <Button
+            onClick={() => setIsRecording((prev) => !prev)}
+            variant={isRecording ? "destructive" : "default"}
+          >
+            {isRecording ? "Stop" : "Record"}
+          </Button>
+        </div>
+
         <CommandList className={"bg-[#151415]"}>
-          {/* <CommandEmpty>No results found.</CommandEmpty> */}
           {loading && (
             <CommandGroup heading="Processing">
               <CommandItem>Loading...</CommandItem>
             </CommandGroup>
           )}
 
-          {/* 
-            If we have a tool call, show an inline confirmation section. 
-            Otherwise, show any plain text response 
-          */}
           {toolCallData && (
             <CommandGroup heading="Tool Call Detected" className="bg-[#151415] text-white">
               <CommandItem className="bg-[#151415] text-white flex flex-col gap-2">
@@ -151,7 +178,6 @@ export default function CommandDemo() {
             </CommandGroup>
           )}
 
-          {/* Plain text response area */}
           {response && !toolCallData && (
             <CommandGroup heading="Response" className={"bg-[#151415] text-white"}>
               <CommandItem className={"bg-[#151415] text-white"}>
