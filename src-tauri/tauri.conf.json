@@ -21,8 +21,8 @@
       {
         "label": "command-palette",
         "url": "http://localhost:3000/command-palette",
-        "width": 600,
-        "height": 400,
+        "width": 450,
+        "height": 300,
         "decorations": false,
         "create": false,
         "center": true
