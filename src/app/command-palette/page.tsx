@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import {
   Command,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import AudioRecorder from "./components/speech-to-text"
 import { Mic } from "lucide-react"
 import LoadingSpinner from "./components/loading-spinner"
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
 import { isLLMToolCallResponse, LLMToolCallResponse } from "../../lib/helpers"
 
@@ -29,6 +30,20 @@ export default function CommandDemo() {
 
   // A local boolean to track if we are currently recording or not
   const [isRecording, setIsRecording] = useState(false);
+
+  // Add this new state to track successful confirmations
+  const [confirmationSuccess, setConfirmationSuccess] = useState(false);
+
+  const [dotLottieRef, setDotLottieRef] = useState<DotLottie | null>(null);
+
+  // Add useEffect to listen for animation completion
+  useEffect(() => {
+    if (dotLottieRef) {
+      dotLottieRef.addEventListener('complete', () => {
+        setCommandValue('');
+      });
+    }
+  }, [dotLottieRef]);
 
   const handleCommand = async (value: string) => {
     if (!value.trim()) return;
@@ -77,7 +92,6 @@ export default function CommandDemo() {
         messages: toolCallData.message,
       };
 
-      // Example endpoint matching your ChatInterface logic
       const confirmResponse = await fetch(
         "http://localhost:8000/api/users/user_2t7Urf0HmRBLKr25UvXNrbaHhSh/chats/1650b445-9793-4ff9-8825-e807d6a39d52/confirm-tool-call",
         {
@@ -92,10 +106,12 @@ export default function CommandDemo() {
       if (!confirmResponse.ok) {
         console.error("Error confirming tool call:", await confirmResponse.text());
       } else {
-        const confirmData = await confirmResponse.json();
-        console.log("Confirm call response:", confirmData);
-        const newContent = confirmData.choices?.[0]?.message?.content;
-        setResponse(newContent ?? "No response content after tool call confirmation");
+        // Instead of setting the response, set confirmation success
+        setConfirmationSuccess(true);
+        // Clear the success indicator after 2 seconds
+        setTimeout(() => {
+          setConfirmationSuccess(false);
+        }, 2000);
       }
     } catch (error) {
       console.error("Error confirming tool call:", error);
@@ -153,6 +169,20 @@ export default function CommandDemo() {
             </div>
           )}
 
+          {confirmationSuccess && (
+            <div className="w-full flex justify-center py-4">
+              <div className="w-24 h-24">
+                <DotLottieReact
+                  src="/checkmark_animation.lottie"
+                  autoplay
+                  speed={1.5}
+                  loop={false}
+                  dotLottieRefCallback={setDotLottieRef}
+                />
+              </div>
+            </div>
+          )}
+
           {toolCallData && (
             <CommandGroup heading="Tool Call Detected" className="bg-[#151415] text-white">
               <CommandItem className="bg-[#151415] text-white flex flex-col gap-2">
@@ -184,7 +214,7 @@ export default function CommandDemo() {
             </CommandGroup>
           )}
 
-          {response && !toolCallData && (
+          {response && !toolCallData && !confirmationSuccess && (
             <CommandGroup heading="Response" className={"bg-[#151415] text-white"}>
               <CommandItem className={"bg-[#151415] text-white"}>
                 {response}
