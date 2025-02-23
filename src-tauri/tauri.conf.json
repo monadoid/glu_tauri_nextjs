@@ -17,6 +17,17 @@
         "height": 600,
         "resizable": true,
         "fullscreen": false
+      },
+      {
+        "label": "command-palette",
+        "title": "Command Palette",
+        "width": 600,
+        "height": 400,
+        "decorations": false,
+        "center": true,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "visible": true
       }
     ],
     "security": {
