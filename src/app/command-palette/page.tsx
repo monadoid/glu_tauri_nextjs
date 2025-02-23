@@ -11,7 +11,7 @@ import {
 import { fetch } from '@tauri-apps/plugin-http'
 import { Button } from "@/components/ui/button"
 
-import { isLLMToolCallResponse, LLMToolCallResponse } from "./helpers"
+import { isLLMToolCallResponse, LLMToolCallResponse } from "../../lib/helpers"
 
 export default function CommandDemo() {
   const [response, setResponse] = useState<string | null>(null);

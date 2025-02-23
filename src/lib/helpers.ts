@@ -1,3 +1,4 @@
+"use client"
 export interface ToolCall {
     id: string;
     tool_name: string;

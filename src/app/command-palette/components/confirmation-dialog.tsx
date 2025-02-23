@@ -1,5 +1,6 @@
+"use client"
 import React from "react";
-import { LoadingSpinner } from "./loading-spinner"
+import LoadingSpinner from "./loading-spinner"
 import {
     Dialog,
     DialogContent,
@@ -22,12 +23,18 @@ interface ConfirmationDialogProps {
     isConfirming?: boolean;
 }
 
-export function ConfirmationDialog({
+export default function ConfirmationDialog({
                                        toolCall,
                                        onConfirm,
                                        onCancel,
                                        isConfirming
                                    }: ConfirmationDialogProps) {
+    // Add early return if toolCall is undefined
+    if (!toolCall) {
+        console.error('ConfirmationDialog: toolCall prop is required');
+        return null;
+    }
+
     const { tool_name, args, api_name } = toolCall;
 
     // Format the tool name for display
@@ -44,6 +51,7 @@ export function ConfirmationDialog({
         }
         if (typeof value === "object" && value !== null) {
             return Object.entries(value)
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 .filter(([_, v]) => v !== null && v !== "" && v !== undefined)
                 .map(([k, v]) => `${k}: ${formatValue(v)}`)
                 .join(", ");
