@@ -11,6 +11,8 @@ import {
 import { fetch } from '@tauri-apps/plugin-http'
 import { Button } from "@/components/ui/button"
 import AudioRecorder from "./components/speech-to-text"
+import { Mic } from "lucide-react"
+import LoadingSpinner from "./components/loading-spinner"
 
 import { isLLMToolCallResponse, LLMToolCallResponse } from "../../lib/helpers"
 
@@ -105,8 +107,8 @@ export default function CommandDemo() {
 
   // Merge transcribed text into our commandValue
   const handleTranscription = (transcribedText: string) => {
-    // Combine existing input with the new transcribed text (or replace if empty)
-    const finalText = commandValue ? `${commandValue} ${transcribedText}` : transcribedText;
+    // Clear existing input and set only the new transcribed text
+    const finalText = transcribedText;
     setCommandValue(finalText);
 
     // Automatically submit to backend without waiting for user to press Enter
@@ -121,8 +123,8 @@ export default function CommandDemo() {
         onTranscription={handleTranscription}
       />
 
-      <Command shouldFilter={false} className="p-4 py-8 rounded-lg bg-[#151415]">
-        <div className="flex items-center gap-2">
+      <Command shouldFilter={false} className="p-4 py-8 rounded-lg bg-[#151415] w-full">
+        <div className="relative w-full">
           <CommandInput
             placeholder=""
             value={commandValue}
@@ -132,23 +134,23 @@ export default function CommandDemo() {
                 void handleCommand(commandValue);
               }
             }}
-            className="autofocus text-white flex-1"
+            className="autofocus text-white pr-12"
           />
-
-          {/* Single Record button to the right of our input */}
           <Button
             onClick={() => setIsRecording((prev) => !prev)}
-            variant={isRecording ? "destructive" : "default"}
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2"
           >
-            {isRecording ? "Stop" : "Record"}
+            <Mic className={`h-5 w-5 ${isRecording ? 'text-red-500' : 'text-green-500'}`} />
           </Button>
         </div>
 
         <CommandList className={"bg-[#151415]"}>
           {loading && (
-            <CommandGroup heading="Processing">
-              <CommandItem>Loading...</CommandItem>
-            </CommandGroup>
+            <div className="flex justify-center py-4">
+              <LoadingSpinner className="h-6 w-6 text-white" />
+            </div>
           )}
 
           {toolCallData && (
