@@ -20,14 +20,12 @@
       },
       {
         "label": "command-palette",
-        "title": "Command Palette",
+        "url": "http://localhost:3000/command-palette",
         "width": 600,
         "height": 400,
         "decorations": false,
-        "center": true,
-        "skipTaskbar": true,
-        "alwaysOnTop": true,
-        "visible": true
+        "create": false,
+        "center": true
       }
     ],
     "security": {

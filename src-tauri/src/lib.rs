@@ -28,8 +28,8 @@ pub fn run() {
                                     println!("Shortcut matches");
                                     // Try to get existing window
                                     if let Some(window) = app.get_webview_window("command-palette") {
-                                        println!("Window already exists!");
-                                        let _ = window.set_focus();
+                                        println!("Window exists - closing!");
+                                        let _ = window.close();
                                     } else {
                                         println!("Window doesn't exist - creating!");
                                         // Create new window if it doesn't exist
@@ -41,7 +41,6 @@ pub fn run() {
                                         .title("Command Palette")
                                         .inner_size(600.0, 400.0)
                                         .decorations(false)
-                                        // .transparent(true)
                                         .center()
                                         .skip_taskbar(true)
                                         .always_on_top(true)
