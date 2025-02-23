@@ -10,10 +10,11 @@
     "beforeBuildCommand": "pnpm build"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "clerk-nextjs-tauri-example",
-        "width": 800,
+        "width": 600,
         "height": 600,
         "resizable": true,
         "fullscreen": false
@@ -21,9 +22,10 @@
       {
         "label": "command-palette",
         "url": "http://localhost:3000/command-palette",
-        "width": 450,
-        "height": 300,
         "decorations": false,
+        "shadow": false,
+        "transparent": true,
+        "backgroundColor": "#2d82e308",
         "create": false,
         "center": true
       }

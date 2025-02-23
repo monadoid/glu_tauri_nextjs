@@ -1,4 +1,4 @@
-use tauri::{Manager, WebviewWindowBuilder, WindowEvent};
+use tauri::{WebviewWindowBuilder};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -12,7 +12,6 @@ pub fn run() {
                         .build(),
                 )?;
             }
-
             #[cfg(desktop)]
             {
                 use tauri::Manager;
@@ -40,6 +39,8 @@ pub fn run() {
                                         )
                                         .title("Command Palette")
                                         .decorations(false)
+                                        .inner_size(800.0,400.0)
+                                        .transparent(true)
                                         .center()
                                         .skip_taskbar(true)
                                         .always_on_top(true)
